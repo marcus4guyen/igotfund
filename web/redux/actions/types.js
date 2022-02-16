@@ -1,0 +1,10 @@
+// contract
+export const INIT_FUND_CONTRACT = 'INIT_FUND_CONTRACT'
+export const INIT_PROJECT_CONTRACTS = 'INIT_PROJECT_CONTRACTS'
+export const INIT_PROJECT_CONTRACT = 'INIT_PROJECT_CONTRACT'
+export const FETCH_PROJECT_FROM_FUND = 'FETCH_PROJECT_FROM_FUND'
+export const ADD_NEW_PROJECT = 'ADD_NEW_PROJECT'
+
+// authentication
+export const LOG_IN = 'LOGIN'
+export const LOG_OUT = 'LOGOUT'
