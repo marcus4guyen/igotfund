@@ -143,7 +143,7 @@ const ProjectForm = () => {
             <FormControl id='image' isRequired>
               <FormLabel>Image URL</FormLabel>
               <InputGroup>
-                <InputLeftAddon children='https://' />
+                <InputLeftAddon>https://</InputLeftAddon>
                 <Input
                   value={image}
                   onChange={({ target }) => setImage(target.value)}

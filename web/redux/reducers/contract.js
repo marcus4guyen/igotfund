@@ -13,10 +13,6 @@ export const contractReducer = (
   state = initialContractState,
   { type, payload }
 ) => {
-  console.log('==========')
-  console.log('state: ' + state)
-  console.log(type, payload)
-  console.log('==========')
   switch (type) {
     case types.INIT_FUND_CONTRACT: {
       return {

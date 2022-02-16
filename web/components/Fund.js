@@ -21,7 +21,7 @@ const Fund = () => {
     }
 
     dispatch(fetchProjectsFromFund({ contract, offset, PAGE_PER_LIMIT }))
-  }, [page, dispatch])
+  }, [page, dispatch, contract])
 
   return <ProjectList projectNames={projectNames} />
 }
