@@ -19,8 +19,7 @@ const DonationModal = ({ isOpen, onClose, onDonate }) => {
   const initialRef = React.useRef()
 
   const [amount, setAmount] = useState(1)
-  const isInterger = amount % 1 === 0
-  const canDonate = amount && isInterger
+  const canDonate = amount >= 1
 
   return (
     <Modal
@@ -42,11 +41,11 @@ const DonationModal = ({ isOpen, onClose, onDonate }) => {
               value={amount}
               onChange={({ target }) => setAmount(target.value)}
             />
-            {isInterger ? (
-              <FormHelperText>Please enter an interger only.</FormHelperText>
+            {canDonate ? (
+              <></>
             ) : (
               <FormErrorMessage>
-                Please enter an interger only.
+                The minimum amount should be 0.1 NEAR.
               </FormErrorMessage>
             )}
           </FormControl>

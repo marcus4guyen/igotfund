@@ -1,5 +1,5 @@
 import { Flex, useColorModeValue, chakra } from '@chakra-ui/react'
-import { formatDate } from '../../near/utils'
+import { asNear, formatDate } from '../../near/utils'
 
 const Donation = ({ created_at, donor, amount }) => {
   return (
@@ -25,9 +25,9 @@ const Donation = ({ created_at, donor, amount }) => {
           fontSize={'15px'}
           pb={4}
         >
-          {donor} donates{' '}
+          {donor} donated&nbsp;
           <chakra.span fontFamily={'Work Sans'} fontWeight='bold' fontSize={14}>
-            {amount} NEAR
+            {asNear(amount)}
           </chakra.span>
         </chakra.p>
 

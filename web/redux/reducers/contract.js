@@ -5,7 +5,7 @@ const initialContractState = {
   walletConnection: null,
   contract: null,
   config: null,
-  projectNames: [],
+  projectIdentifiers: [],
   projects: [],
 }
 
@@ -32,7 +32,7 @@ export const contractReducer = (
     case types.FETCH_PROJECT_FROM_FUND: {
       return {
         ...state,
-        projectNames: payload.projects,
+        projectIdentifiers: payload.projects,
       }
     }
     default:

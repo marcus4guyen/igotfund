@@ -52,7 +52,7 @@ const ProjectDetail = ({ identifier }) => {
       const projectContract = await _initProjectContract({
         wallet: walletConnection,
         nearConfig,
-        project: identifier,
+        identifier,
       })
       setContract(projectContract)
 
@@ -151,6 +151,7 @@ const ProjectDetail = ({ identifier }) => {
                   border='none'
                   leftIcon={<FaDonate />}
                   onClick={onOpen}
+                  disabled={!project.funding}
                 >
                   Donate
                 </Button>
@@ -170,6 +171,7 @@ const ProjectDetail = ({ identifier }) => {
                   border='none'
                   leftIcon={<FaDonate />}
                   onClick={releaseDonationsHandler}
+                  disabled={!project.funding}
                 >
                   Release Donations
                 </Button>

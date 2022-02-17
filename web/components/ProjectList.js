@@ -7,7 +7,7 @@ import { FiPlus } from 'react-icons/fi'
 import { initProjectContracts } from '../redux/actions/contract'
 import Card from '../components/ui/Card'
 
-const ProjectList = ({ projectNames }) => {
+const ProjectList = ({ projectIdentifiers }) => {
   const dispatch = useDispatch()
   const router = useRouter()
   const { walletConnection, nearConfig, projects } = useSelector(
@@ -19,10 +19,12 @@ const ProjectList = ({ projectNames }) => {
       initProjectContracts({
         wallet: walletConnection,
         nearConfig,
-        projectsName: projectNames.map((project) => project.name),
+        projectIdentifiers: projectIdentifiers.map(
+          (project) => project.identifier
+        ),
       })
     )
-  }, [dispatch, projectNames])
+  }, [dispatch, projectIdentifiers])
 
   const navigateToDetailPage = useCallback((identifier) => {
     router.push(`/project/${identifier}`)

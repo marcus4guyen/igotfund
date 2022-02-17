@@ -1,6 +1,6 @@
 import * as nearAPI from 'near-api-js'
 import getConfig from '../../near/config'
-import { XCC_GAS, ONE_NEAR } from '../../near/utils'
+import { BASIC_GAS, ONE_NEAR } from '../../near/utils'
 import * as types from './types'
 
 export const initFundContract = () => async (dispatch) => {
@@ -49,16 +49,16 @@ export const initFundContract = () => async (dispatch) => {
 }
 
 export const initProjectContracts =
-  ({ wallet, nearConfig, projectsName = [] }) =>
+  ({ wallet, nearConfig, projectIdentifiers = [] }) =>
   (dispatch) => {
     const contractsPromises = []
 
-    projectsName.forEach((project) => {
+    projectIdentifiers.forEach((identifier) => {
       contractsPromises.push(
         _initProjectContract({
           wallet,
           nearConfig,
-          project,
+          identifier,
         })
       )
     })
@@ -91,18 +91,18 @@ export const fetchProjectsFromFund =
   }
 
 export const createNewProject =
-  ({ contract, name, title, description, image, amount }) =>
+  ({ contract, identifier, title, description, imageUrl, amount }) =>
   (dispatch) => {
     contract
       .add_project(
         {
-          project: name,
+          identifier,
           title,
           description,
-          image,
+          imageUrl,
         },
-        XCC_GAS,
-        (ONE_NEAR * BigInt(amount)).toString()
+        BASIC_GAS,
+        ONE_NEAR.mul(amount).toFixed()
       )
       .then(() =>
         dispatch({
@@ -113,8 +113,8 @@ export const createNewProject =
   }
 
 // funtions that do not modify global states
-export const _initProjectContract = ({ wallet, nearConfig, project }) => {
-  const fullContractName = project + '.' + nearConfig.contractName
+export const _initProjectContract = ({ wallet, nearConfig, identifier }) => {
+  const fullContractName = identifier + '.' + nearConfig.contractName
 
   // Initializing the contract APIs by contract name and configuration
   return new nearAPI.Contract(wallet.account(), fullContractName, {
@@ -145,12 +145,12 @@ export const _getLikeCount = ({ contract }) => contract.get_like_count()
 
 // Change Methods
 export const _donate = ({ contract, amount }) =>
-  contract.donate({}, XCC_GAS, (ONE_NEAR * BigInt(amount)).toString())
+  contract.donate({}, BASIC_GAS, ONE_NEAR.mul(amount).toFixed())
 
 export const _addComment = ({ contract, newComment }) =>
-  contract.add_comment({ text: newComment }, XCC_GAS)
+  contract.add_comment({ text: newComment }, BASIC_GAS)
 
-export const _like = ({ contract }) => contract.like({}, XCC_GAS)
+export const _like = ({ contract }) => contract.like({}, BASIC_GAS)
 
 export const _releaseDonations = ({ contract, identifier }) =>
-  contract.release_donations({ project: identifier }, XCC_GAS)
+  contract.release_donations({ identifier }, BASIC_GAS)

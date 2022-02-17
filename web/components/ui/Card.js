@@ -2,12 +2,15 @@ import {
   Avatar,
   Box,
   Center,
+  Flex,
   Heading,
+  HStack,
   Image,
   Stack,
   Text,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { FiLock, FiUnlock } from 'react-icons/fi'
 import { formatDate } from '../../near/utils'
 
 const Card = ({ onClick = () => {}, project }) => {
@@ -33,18 +36,27 @@ const Card = ({ onClick = () => {}, project }) => {
           pos={'relative'}
           height='300px'
         >
-          <Image src={project.image} fit='cover' w={'100%'} height={'100%'} />
+          <Image
+            src={project.imageUrl}
+            fit='cover'
+            w={'100%'}
+            height={'100%'}
+          />
         </Box>
         <Stack>
-          <Text
-            color={'green.500'}
-            textTransform={'uppercase'}
-            fontWeight={800}
-            fontSize={'sm'}
-            letterSpacing={1.1}
-          >
-            NEAR
-          </Text>
+          <Flex direction={'row'} justifyContent='space-between'>
+            <Text
+              color={project.funding ? 'orange.500' : 'green.500'}
+              textTransform={'uppercase'}
+              fontWeight={800}
+              fontSize={'sm'}
+              letterSpacing={1.1}
+            >
+              NEAR
+            </Text>
+
+            {project.funding ? <ProjectFunding /> : <ProjectComplete />}
+          </Flex>
           <Heading
             color={useColorModeValue('gray.700', 'white')}
             fontSize={'2xl'}
@@ -68,5 +80,35 @@ const Card = ({ onClick = () => {}, project }) => {
     </Center>
   )
 }
+
+const ProjectFunding = () => (
+  <Flex direction={'row'} as={HStack} spacing='2'>
+    <FiUnlock />
+    <Text
+      color={'orange.500'}
+      textTransform={'uppercase'}
+      fontWeight={800}
+      fontSize={'sm'}
+      letterSpacing={1.1}
+    >
+      Funding
+    </Text>
+  </Flex>
+)
+
+const ProjectComplete = () => (
+  <Flex direction={'row'} as={HStack} spacing='2'>
+    <FiLock />
+    <Text
+      color={'green.500'}
+      textTransform={'uppercase'}
+      fontWeight={800}
+      fontSize={'sm'}
+      letterSpacing={1.1}
+    >
+      Complete
+    </Text>
+  </Flex>
+)
 
 export default Card

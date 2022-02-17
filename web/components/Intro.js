@@ -1,4 +1,6 @@
 import Head from 'next/head'
+import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useCallback } from 'react'
 import {
@@ -15,12 +17,24 @@ import {
 import { signIn } from '../redux/actions/authentication'
 
 const Intro = () => {
+  const router = useRouter()
   const dispatch = useDispatch()
   const { walletConnection, nearConfig } = useSelector((state) => state.near)
 
   const signInHandler = useCallback(() =>
     dispatch(signIn({ wallet: walletConnection, nearConfig }))
   )
+
+  console.log()
+
+  return router.route === '/rules' ? (
+    <Rules />
+  ) : (
+    <GetStarted signInHandler={signInHandler} />
+  )
+}
+
+const GetStarted = ({ signInHandler }) => {
   return (
     <>
       <Head>
@@ -69,9 +83,11 @@ const Intro = () => {
             >
               Get Started
             </Button>
-            <Button variant='link' colorScheme='blue' size='sm'>
-              Learn more
-            </Button>
+            <NextLink href='/rules'>
+              <Button variant='link' colorScheme='blue' size='sm'>
+                Learn more
+              </Button>
+            </NextLink>
             <Box>
               <Icon
                 as={Arrow}
@@ -97,6 +113,10 @@ const Intro = () => {
       </Container>
     </>
   )
+}
+
+const Rules = () => {
+  return <>Rules</>
 }
 
 const Arrow = createIcon({

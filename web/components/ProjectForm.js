@@ -41,10 +41,12 @@ const ProjectForm = () => {
   }
 
   // State
-  const [name, setName] = useState(lorem.generateWords(1))
+  const [identifier, setIdentifier] = useState(lorem.generateWords(1))
   const [title, setTitle] = useState(lorem.generateWords(2))
   const [description, setDescription] = useState(lorem.generateSentences(5))
-  const [image, setImage] = useState(images[Math.floor(Math.random() * 5)])
+  const [imageUrl, setImageUrl] = useState(
+    images[Math.floor(Math.random() * 5)]
+  )
   const [amount, setAmount] = useState(10)
   // Error
   const isDescriptionTooLong = description.length > 500
@@ -52,10 +54,10 @@ const ProjectForm = () => {
   const isFormValid =
     !isDescriptionTooLong &&
     isAmountEnough &&
-    name &&
+    identifier &&
     title &&
     description &&
-    image &&
+    imageUrl &&
     amount
 
   const onSubmitHandler = useCallback(async (event) => {
@@ -64,10 +66,10 @@ const ProjectForm = () => {
     dispatch(
       createNewProject({
         contract,
-        name,
+        identifier,
         title,
         description,
-        image,
+        imageUrl,
         amount,
       })
     )
@@ -101,12 +103,12 @@ const ProjectForm = () => {
           </Stack>
           <Stack spacing={4}>
             <HStack>
-              <FormControl id='name' isRequired>
+              <FormControl id='identifier' isRequired>
                 <FormLabel>ID</FormLabel>
                 <Input
                   type='text'
-                  value={name}
-                  onChange={({ target }) => setName(target.value)}
+                  value={identifier}
+                  onChange={({ target }) => setIdentifier(target.value)}
                 />
               </FormControl>
 
@@ -145,8 +147,8 @@ const ProjectForm = () => {
               <InputGroup>
                 <InputLeftAddon>https://</InputLeftAddon>
                 <Input
-                  value={image}
-                  onChange={({ target }) => setImage(target.value)}
+                  value={imageUrl}
+                  onChange={({ target }) => setImageUrl(target.value)}
                 />
               </InputGroup>
             </FormControl>

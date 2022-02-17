@@ -7,7 +7,7 @@ const PAGE_PER_LIMIT = 10
 
 const Fund = () => {
   const dispatch = useDispatch()
-  const { contract, projectNames } = useSelector((state) => state.near)
+  const { contract, projectIdentifiers } = useSelector((state) => state.near)
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -23,7 +23,7 @@ const Fund = () => {
     dispatch(fetchProjectsFromFund({ contract, offset, PAGE_PER_LIMIT }))
   }, [page, dispatch, contract])
 
-  return <ProjectList projectNames={projectNames} />
+  return <ProjectList projectIdentifiers={projectIdentifiers} />
 }
 
 export default Fund

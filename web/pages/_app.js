@@ -1,4 +1,5 @@
 import { Provider } from 'react-redux'
+import React from 'react'
 import { ChakraProvider } from '@chakra-ui/react'
 import { useStore } from '../redux/store'
 
@@ -17,5 +18,7 @@ function MyApp({ Component, pageProps }) {
     </Provider>
   )
 }
+
+if (!process.browser) React.useLayoutEffect = React.useEffect
 
 export default MyApp
