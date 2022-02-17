@@ -3,12 +3,20 @@ import * as util from '../../utils'
 import * as contract from '../assembly'
 import * as model from '../assembly/model'
 
-const FUND_ACCOUNT_ID = 'fund'
+const CONTRACT_ACCOUNT_ID = 'fund'
 const OWNER_ACCOUNT_ID = 'alice'
-const PROJECT_NAME = 'defi'
+const PROJECT_IDENTIFIER = 'defi'
 
-const useFundAsPredecessor = (): void => {
-  VMContext.setPredecessor_account_id(FUND_ACCOUNT_ID)
+const projects = (): PersistentUnorderedMap<u32, model.Project> => {
+  return new PersistentUnorderedMap<u32, model.Project>('ps')
+}
+
+const useContractAsPredecessor = (): void => {
+  VMContext.setPredecessor_account_id(CONTRACT_ACCOUNT_ID)
+}
+
+const useOwnerAsPredecessor = (): void => {
+  VMContext.setPredecessor_account_id(CONTRACT_ACCOUNT_ID)
 }
 
 const attachMinBalance = (): void => {
@@ -17,18 +25,24 @@ const attachMinBalance = (): void => {
 
 const doInitialize = (): void => {
   attachMinBalance()
-  useFundAsPredecessor()
+
+  useContractAsPredecessor()
+
   contract.init()
 }
 
-const projects = (): PersistentUnorderedMap<u32, model.Project> => {
-  return new PersistentUnorderedMap<u32, model.Project>('ps')
+const doAddProject = (): void => {
+  useOwnerAsPredecessor()
+
+  const project = new model.Project(OWNER_ACCOUNT_ID, PROJECT_IDENTIFIER)
+
+  projects().set(util.key_for(project.identifier), project)
 }
 
-describe('Fund initialization', () => {
-  beforeEach(useFundAsPredecessor)
+describe('Contract initialization', (): void => {
+  beforeEach(useContractAsPredecessor)
 
-  it('should create a fund', () => {
+  it('should create a contract', (): void => {
     attachMinBalance()
 
     contract.init()
@@ -38,7 +52,7 @@ describe('Fund initialization', () => {
     }).not.toThrow()
   })
 
-  it('should prevent double initialization', () => {
+  it('should prevent double initialization', (): void => {
     attachMinBalance()
 
     contract.init()
@@ -48,35 +62,42 @@ describe('Fund initialization', () => {
     }).toThrow('Contract is already initialized.')
   })
 
-  it('should require a minimum balance', () => {
+  it('should require a minimum amount for deposit', (): void => {
     expect((): void => {
       contract.init()
-    }).toThrow('You must deposit at least 10 NEAR to initialize this contract.')
+    }).toThrow(
+      'You must stake at least 10 NEAR tokens in order to initialize this contract.'
+    )
   })
 })
 
-describe('Fund self-service methods', () => {
-  beforeEach(doInitialize)
+describe('Project methods', (): void => {
+  beforeEach((): void => {
+    doInitialize()
 
-  it('should return a list of project', () => {
-    const project = new model.Project(OWNER_ACCOUNT_ID, PROJECT_NAME)
-    projects().set(util.key_for(project.name), project)
+    doAddProject()
+  })
 
-    expect(contract.get_project_list(0).length).toBeGreaterThan(
-      0,
-      'Project length must be greater than 0'
+  it('should add a new project', (): void => {
+    expect(contract.get_project_list(0)[0].identifier).toStrictEqual(
+      PROJECT_IDENTIFIER,
+      'Project identifier should be ' + PROJECT_IDENTIFIER
     )
 
-    expect(contract.get_project_list(0)[0].name).toStrictEqual(
-      PROJECT_NAME,
-      'Project name should be ' + PROJECT_NAME
+    expect(contract.get_project_list(0)[0].owner).toStrictEqual(
+      OWNER_ACCOUNT_ID,
+      'Project owner should be ' + OWNER_ACCOUNT_ID
     )
   })
 
-  it('should return a count of projects', () => {
-    const project = new model.Project(OWNER_ACCOUNT_ID, PROJECT_NAME)
-    projects().set(util.key_for(project.name), project)
+  it('should return a list of project', (): void => {
+    expect(contract.get_project_list(0).length).toBeGreaterThan(
+      0,
+      'Project length should be greater than 0'
+    )
+  })
 
+  it('should return a total number of projects in this contract', (): void => {
     expect(contract.get_project_count()).toStrictEqual(
       1,
       'Project length should be 1'

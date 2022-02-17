@@ -1,18 +1,26 @@
 import { u128, VMContext } from 'near-sdk-as'
 import * as util from '../../utils'
 import * as contract from '../assembly'
+import { Project } from '../assembly/models'
 
-const FUND_ACCOUNT_ID = 'fund'
+const CONTRACT_ACCOUNT_ID = 'fund'
 const OWNER_ACCOUNT_ID = 'alice'
 const DONOR1_ACCOUNT_ID = 'bob'
 const DONOR2_ACCOUNT_ID = 'john'
 const PROJECT_IDENTIFIER = 'defi'
-const PROJECT_TITLE = 'defi'
-const PROJECT_DESCRIPTION = 'awesome project'
-const PROJECT_IMAGE = 'https://url-to-image'
+const PROJECT_TITLE = 'Decentralized Finance'
+const PROJECT_DESCRIPTION = 'This is an awesome project.'
+const LONG_TEXT =
+  'Pariatur sit deserunt cillum magna ea. Labore laboris nulla nisi enim dolore in cupidatat duis minim. Aliquip occaecat commodo sit deserunt ut aute qui exercitation ad aute sunt ea cupidatat cupidatat duis. Culpa ea velit cillum aliqua nulla elit enim dolore et magna officia occaecat eu culpa occaecat. Aute adipisicing veniam culpa magna incididunt enim laboris tempor reprehenderit mollit ea duis Lorem. Commodo pariatur mollit sint do consequat id eu amet fugiat. Velit velit officia reprehenderit laborum sit officia dolore irure cillum ullamco irure anim incididunt magna.'
+const PROJECT_IMAGE_URL = 'https://url-to-image'
+const COMMENT_TEXT = 'I love this project.'
 
-const useFundAsPredecessor = (): void => {
-  VMContext.setPredecessor_account_id(FUND_ACCOUNT_ID)
+const useContractAsPredecessor = (): void => {
+  VMContext.setPredecessor_account_id(CONTRACT_ACCOUNT_ID)
+}
+
+const useProjectOwnerAsSigner = (): void => {
+  VMContext.setSigner_account_id(OWNER_ACCOUNT_ID)
 }
 
 const attachMinBalance = (): void => {
@@ -21,27 +29,68 @@ const attachMinBalance = (): void => {
 
 const doInitialize = (): void => {
   attachMinBalance()
-  useFundAsPredecessor()
+
+  useContractAsPredecessor()
+
+  useProjectOwnerAsSigner()
+
   contract.init(
     PROJECT_IDENTIFIER,
     PROJECT_TITLE,
     PROJECT_DESCRIPTION,
-    PROJECT_IMAGE
+    PROJECT_IMAGE_URL
   )
 }
 
-describe('project initialization', () => {
-  beforeEach(useFundAsPredecessor)
+const doDonate = (donorAccountId: string): void => {
+  VMContext.setAttached_deposit(util.MIN_ATTACHED_DEPOSIT)
 
-  it('should create project with proper metadata', () => {
-    VMContext.setSigner_account_id(OWNER_ACCOUNT_ID)
+  VMContext.setSigner_account_id(donorAccountId)
+
+  VMContext.setPredecessor_account_id(donorAccountId)
+
+  contract.donate()
+}
+
+const doReleaseDonations = (): void => {
+  useContractAsPredecessor()
+
+  useProjectOwnerAsSigner()
+
+  contract.release_donations()
+}
+
+const doComment = (accountId: string): void => {
+  VMContext.setSigner_account_id(accountId)
+
+  VMContext.setPredecessor_account_id(accountId)
+
+  contract.add_comment(COMMENT_TEXT)
+}
+
+const doLike = (accountId: string): void => {
+  VMContext.setPredecessor_account_id(accountId)
+
+  VMContext.setSigner_account_id(accountId)
+
+  contract.like()
+}
+
+describe('Project initialization', (): void => {
+  beforeEach((): void => {
     attachMinBalance()
 
+    useContractAsPredecessor()
+
+    useProjectOwnerAsSigner()
+  })
+
+  it('should create a project with proper metadata', (): void => {
     contract.init(
       PROJECT_IDENTIFIER,
       PROJECT_TITLE,
       PROJECT_DESCRIPTION,
-      PROJECT_IMAGE
+      PROJECT_IMAGE_URL
     )
 
     const project = contract.get()
@@ -49,19 +98,17 @@ describe('project initialization', () => {
     expect(project.owner).toStrictEqual(OWNER_ACCOUNT_ID)
     expect(project.title).toStrictEqual(PROJECT_TITLE)
     expect(project.description).toStrictEqual(PROJECT_DESCRIPTION)
-    expect(project.image).toStrictEqual(PROJECT_IMAGE)
+    expect(project.imageUrl).toStrictEqual(PROJECT_IMAGE_URL)
     expect(project.total_donations).toStrictEqual(u128.Zero)
+    expect(project.funding).toStrictEqual(true)
   })
 
-  it('should prevent double initialization', () => {
-    VMContext.setSigner_account_id(OWNER_ACCOUNT_ID)
-    attachMinBalance()
-
+  it('should prevent a double initialization', (): void => {
     contract.init(
       PROJECT_IDENTIFIER,
       PROJECT_TITLE,
       PROJECT_DESCRIPTION,
-      PROJECT_IMAGE
+      PROJECT_IMAGE_URL
     )
 
     expect((): void => {
@@ -69,158 +116,249 @@ describe('project initialization', () => {
         PROJECT_IDENTIFIER,
         PROJECT_TITLE,
         PROJECT_DESCRIPTION,
-        PROJECT_IMAGE
+        PROJECT_IMAGE_URL
       )
     }).toThrow('Contract is already initialized.')
   })
 
-  it('should require title not to be blank', () => {
-    VMContext.setSigner_account_id(OWNER_ACCOUNT_ID)
-    attachMinBalance()
-
-    expect((): void => {
-      contract.init(PROJECT_IDENTIFIER, '', PROJECT_DESCRIPTION, PROJECT_IMAGE)
-    }).toThrow('Project title must not be blank.')
-  })
-
-  it('should require minimum balance', () => {
-    VMContext.setSigner_account_id(OWNER_ACCOUNT_ID)
+  it('should require a minimum balance', (): void => {
+    VMContext.setAttached_deposit(u128.Zero)
 
     expect((): void => {
       contract.init(
         PROJECT_IDENTIFIER,
         PROJECT_TITLE,
         PROJECT_DESCRIPTION,
-        PROJECT_IMAGE
+        PROJECT_IMAGE_URL
       )
-    }).toThrow('You must deposit at least 10 NEAR to initialize this contract.')
-  })
-})
-
-describe('project donations', () => {
-  beforeEach(doInitialize)
-
-  it('should capture donations', () => {
-    VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-
-    contract.donate()
-
-    expect(contract.get().total_donations).toStrictEqual(
-      util.MIN_ATTACHED_DEPOSIT
+    }).toThrow(
+      'You must deposit at least ' +
+        util.asNEAR(util.MIN_ATTACHED_DEPOSIT) +
+        ' NEAR to initialize this contract.'
     )
   })
 
-  describe('captures donations', () => {
-    beforeEach(() => {
-      VMContext.setAttached_deposit(util.MIN_ATTACHED_DEPOSIT)
+  it('should require the project title not to be blank', (): void => {
+    expect((): void => {
+      contract.init(
+        PROJECT_IDENTIFIER,
+        '',
+        PROJECT_DESCRIPTION,
+        PROJECT_IMAGE_URL
+      )
+    }).toThrow('Title must not be blank.')
+  })
+
+  it('should require the project description not exceed 500 characters', (): void => {
+    expect((): void => {
+      contract.init(
+        PROJECT_IDENTIFIER,
+        PROJECT_TITLE,
+        LONG_TEXT,
+        PROJECT_IMAGE_URL
+      )
+    }).toThrow(
+      'Description must be less than ' +
+        util.MAX_STRING_LENGTH.toString() +
+        ' characters.'
+    )
+  })
+
+  it('should require the project imageUrl to be a valid url', (): void => {
+    expect((): void => {
+      contract.init(
+        PROJECT_IDENTIFIER,
+        PROJECT_TITLE,
+        PROJECT_DESCRIPTION,
+        'url-to-image'
+      )
+    }).toThrow('Your URL is not valid, and must start with "https://".')
+  })
+})
+
+describe('Project donations', (): void => {
+  beforeEach(doInitialize)
+
+  describe('donate()', (): void => {
+    it('should capture donations', (): void => {
+      doDonate(DONOR1_ACCOUNT_ID)
+
+      expect(contract.get().total_donations).toStrictEqual(
+        util.MIN_ATTACHED_DEPOSIT
+      )
+    })
+
+    it('should require user donate directly', (): void => {
+      useContractAsPredecessor()
 
       VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
+
+      expect((): void => {
+        contract.donate()
+      }).toThrow('User must donate directly.')
+    })
+
+    it('should require user attach some money to donate', (): void => {
+      VMContext.setAttached_deposit(u128.Zero)
+
       VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-      contract.donate()
 
-      VMContext.setSigner_account_id(DONOR2_ACCOUNT_ID)
-      VMContext.setPredecessor_account_id(DONOR2_ACCOUNT_ID)
+      VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
+
+      expect((): void => {
+        contract.donate()
+      }).toThrow('User must attach some money.')
+    })
+  })
+
+  describe('release_donations()', (): void => {
+    beforeEach((): void => {
+      VMContext.setAccount_balance(u128.mul(util.ONE_NEAR, u128.from(10)))
+
+      VMContext.setAttached_deposit(u128.mul(util.ONE_NEAR, u128.from(150)))
+
+      VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
+
+      VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
+
       contract.donate()
     })
 
-    it('should calculate a running donations total properly', () => {
-      const twice_attached_deposit = u128.mul(
-        util.MIN_ATTACHED_DEPOSIT,
-        u128.from(2)
+    it('should be able to release the donations fund', (): void => {
+      expect((): void => {
+        doReleaseDonations()
+      }).not.toThrow()
+    })
+
+    it('should not be able to release the donations', (): void => {
+      expect((): void => {
+        useContractAsPredecessor()
+
+        contract.release_donations()
+      }).toThrow(
+        'Only the person who launched this project can release the donations.'
       )
-      expect(contract.get_total_donations()).toBe(twice_attached_deposit)
+
+      expect((): void => {
+        VMContext.setPredecessor_account_id(OWNER_ACCOUNT_ID)
+
+        useProjectOwnerAsSigner()
+
+        contract.release_donations()
+      }).toThrow(
+        'Funds donated to this project can be released only by the owner of this contract.'
+      )
     })
 
-    it('should return a list of donations', () => {
-      expect(contract.get_donation_list(0).length).toBe(2)
-    })
+    it('should not be able to donate after the project is complete', (): void => {
+      doReleaseDonations()
 
-    it('should return a count of donations', () => {
-      expect(contract.get_donation_count()).toBe(2)
+      // manually mark the project as complete bacause the callback function from the ContractPromiseBatch does not work on unitest.
+      const project = Project.get()
+      project.funding = false
+      Project.set(project)
+
+      expect((): void => {
+        doDonate(DONOR1_ACCOUNT_ID)
+      }).toThrow(
+        'The project is not actively seeking crowdfunding at this time. For more information, please contact the project owner.'
+      )
     })
+  })
+
+  it('should calculate a running total for donations properly', (): void => {
+    doDonate(DONOR1_ACCOUNT_ID)
+
+    doDonate(DONOR2_ACCOUNT_ID)
+
+    const twice_attached_deposit = u128.mul(
+      util.MIN_ATTACHED_DEPOSIT,
+      u128.from(2)
+    )
+
+    expect(contract.get_total_donations()).toBe(twice_attached_deposit)
+  })
+
+  it('should return a list of donors who have donated to the project', (): void => {
+    doDonate(DONOR1_ACCOUNT_ID)
+
+    doDonate(DONOR2_ACCOUNT_ID)
+
+    expect(contract.get_donation_list(0).length).toBe(2)
+  })
+
+  it('should return total number of donations in the project', (): void => {
+    doDonate(DONOR1_ACCOUNT_ID)
+
+    doDonate(DONOR2_ACCOUNT_ID)
+
+    expect(contract.get_donation_count()).toBe(2)
   })
 })
 
-describe('project comments', () => {
+describe('Project comments', (): void => {
   beforeEach(doInitialize)
 
-  beforeEach(() => {
+  beforeEach((): void => {
     VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
+
     VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
   })
 
-  it('should capture comments', () => {
-    contract.add_comment('awesome project')
+  it('should capture a comment', (): void => {
+    contract.add_comment(COMMENT_TEXT)
 
-    expect(contract.get_comment_list(0)[0].text).toStrictEqual(
-      'awesome project'
-    )
+    expect(contract.get_comment_list(0)[0].text).toStrictEqual(COMMENT_TEXT)
   })
 
-  it('should reject comments that are too long', () => {
+  it('should reject long comments', (): void => {
     expect((): void => {
-      const LONG_TEXT =
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tempus velit nibh, ornare ultrices elit tempus at. Etiam tristique mattis semper.Vestibulum vehicula elit sed justo consequat malesuada. In ut tincidunt risus. Phasellus eu volutpat leo, vitae mattis ipsum. Aliquam sed sapien id mi venenatis fringilla. Nam in nisl ut purus pharetra facilisis id quis felis. Nullam bibendum ipsum ut tortor molestie pharetra. Nam gravida consectetur enim. Vestibulum egestas sit amet lorem id varius. Nullam lacus est, pulvinar sed pulvinar cursus, aliquet nec ipsum.'
-
       contract.add_comment(LONG_TEXT)
     }).toThrow(
-      'Comment is too long, must be less than ' +
-        util.MAX_COMMENT_LENGTH.toString()
+      'Comment text is too long. Please keep it under ' +
+        util.MAX_STRING_LENGTH.toString() +
+        ' characters.'
     )
   })
 
-  it('should capture multiple comments', () => {
-    VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-    contract.add_comment('awesome project')
+  it('should capture multiple comments', (): void => {
+    doComment(DONOR1_ACCOUNT_ID)
 
-    VMContext.setSigner_account_id(DONOR2_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR2_ACCOUNT_ID)
-    contract.add_comment('great idea')
+    doComment(DONOR2_ACCOUNT_ID)
 
-    expect(contract.get_comment_list(0).length).toBe(2)
-    expect(contract.get_comment_count()).toBe(2)
+    doComment(OWNER_ACCOUNT_ID)
+
+    expect(contract.get_comment_list(0).length).toBe(3)
+
+    expect(contract.get_comment_count()).toBe(3)
   })
 })
 
-describe('project likes', () => {
+describe('Project likes', (): void => {
   beforeEach(doInitialize)
 
-  beforeEach(() => {
-    VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-  })
+  it('should capture one like', (): void => {
+    doLike(DONOR1_ACCOUNT_ID)
 
-  it('should capture likes', () => {
-    contract.like()
     expect(contract.get_like_count()).toBe(1)
   })
 
-  it('should capture multiple likes', () => {
-    VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-    contract.like()
+  it('should capture multiple likes', (): void => {
+    doLike(DONOR1_ACCOUNT_ID)
 
-    VMContext.setSigner_account_id(DONOR2_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR2_ACCOUNT_ID)
-    contract.like()
+    doLike(DONOR2_ACCOUNT_ID)
 
-    expect(contract.get_like_count()).toBe(2)
+    doLike(CONTRACT_ACCOUNT_ID)
+
+    expect(contract.get_like_count()).toBe(3)
   })
 
-  it('should count multiple likes from the same sender as 1', () => {
-    VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-    contract.like()
+  it('should count all likes from the same sender as 1', (): void => {
+    doLike(DONOR1_ACCOUNT_ID)
 
-    VMContext.setSigner_account_id(DONOR2_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR2_ACCOUNT_ID)
-    contract.like()
+    doLike(DONOR2_ACCOUNT_ID)
 
-    VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
-    VMContext.setPredecessor_account_id(DONOR1_ACCOUNT_ID)
-    contract.like()
+    doLike(DONOR1_ACCOUNT_ID)
 
     expect(contract.get_like_count()).toBe(2)
   })

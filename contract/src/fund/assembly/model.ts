@@ -1,7 +1,7 @@
 import { context, PersistentUnorderedMap, storage } from 'near-sdk-as'
-
 import { AccountId, FUND_KEY, key_for } from '../../utils'
 
+// A list of projects in this contract
 const projects = new PersistentUnorderedMap<u32, Project>('ps')
 
 @nearBindgen
@@ -22,17 +22,19 @@ export class Fund {
     return storage.getSome<Fund>(FUND_KEY)
   }
 
-  // =====Projects=====
-  static create_project(owner: AccountId, project: string): void {
-    projects.set(key_for(project), new Project(owner, project))
+  // =================
+  // =====Project=====
+  // =================
+  static create_project(owner: AccountId, identifier: string): void {
+    projects.set(key_for(identifier), new Project(owner, identifier))
   }
 
-  static remove_project(project: string): void {
-    projects.delete(key_for(project))
+  static remove_project(identifier: string): void {
+    projects.delete(key_for(identifier))
   }
 
-  static get_project(project: string): Project {
-    return projects.getSome(key_for(project))
+  static get_project(identifier: string): Project {
+    return projects.getSome(key_for(identifier))
   }
 
   static get_project_list(offset: u32, limit: u32): Project[] {
@@ -43,14 +45,15 @@ export class Fund {
     return projects.length
   }
 
-  static has_project(project: string): bool {
-    return projects.get(key_for(project)) != null
+  static has_project(identifier: string): bool {
+    return projects.get(key_for(identifier)) != null
   }
+  // =================
 }
 
 @nearBindgen
 export class Project {
-  constructor(public owner: AccountId, public name: string) {}
+  constructor(public owner: AccountId, public identifier: string) {}
 }
 
 @nearBindgen
@@ -59,11 +62,11 @@ export class ProjectInitArgs {
     public identifier: string,
     public title: string,
     public description: string,
-    public image: string
+    public imageUrl: string
   ) {}
 }
 
 @nearBindgen
 export class ProjectAsArgs {
-  constructor(public owner: AccountId, public project: string) {}
+  constructor(public owner: AccountId, public identifier: string) {}
 }

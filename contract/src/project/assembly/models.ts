@@ -16,23 +16,26 @@ export class Project {
   contract_owner: AccountId = context.predecessor
   created_at: u64 = context.blockTimestamp
   total_donations: u128 = u128.Zero
+  // If it's true, then users can still donate.
+  // Otherwise, the project marked as complete and they can't donate any more.
+  funding: bool = true
 
   constructor(
     public owner: AccountId,
     public identifier: string,
     public title: string,
     public description: string,
-    public image: string
+    public imageUrl: string
   ) {}
 
   static create(
-    owner: string,
+    owner: AccountId,
     identifier: string,
     title: string,
     description: string,
-    image: string
+    imageUrl: string
   ): void {
-    const project = new Project(owner, identifier, title, description, image)
+    const project = new Project(owner, identifier, title, description, imageUrl)
     this.set(project)
   }
 
@@ -44,9 +47,9 @@ export class Project {
     return storage.getSome<Project>(PROJECT_KEY)
   }
 
-  // ====================
-  // ======DONATIONS=====
-  // ====================
+  // =====================
+  // ======DONATIONS======
+  // =====================
   static add_donation(): void {
     const project = this.get()
 
@@ -65,10 +68,6 @@ export class Project {
     return donations.values(offset, offset + limit)
   }
 
-  static get_total_donations(): u128 {
-    return this.get().total_donations
-  }
-
   static get_donation_count(): u32 {
     return donations.length
   }
@@ -77,9 +76,11 @@ export class Project {
     const project = Project.get()
 
     project.total_donations = u128.Zero
+    project.funding = false // mark the project as complete
 
     this.set(project)
   }
+  // ====================
 
   // ====================
   // ======COMMENTS======
@@ -96,6 +97,7 @@ export class Project {
   static get_comment_count(): u32 {
     return comments.length
   }
+  // ====================
 
   // ====================
   // =======LIKES========
@@ -107,6 +109,7 @@ export class Project {
   static get_like_count(): u32 {
     return likes.size
   }
+  // ====================
 }
 
 @nearBindgen
