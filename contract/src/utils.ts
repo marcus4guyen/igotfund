@@ -3,6 +3,7 @@ import { u128, math, RNG } from 'near-sdk-as'
 export const ONE_NEAR = u128.from('1000000000000000000000000')
 export const FIVE_NEAR = u128.from('5000000000000000000000000')
 export const XCC_GAS = 20000000000000
+export const COMPLEX_ACTIONS_GAS = 60000000000000
 export const MIN_ATTACHED_DEPOSIT = u128.mul(ONE_NEAR, u128.from(10))
 export const MIN_RELEASED_DONATION = u128.mul(ONE_NEAR, u128.from(100))
 export const MIN_LIKED_COUNT: u32 = 10

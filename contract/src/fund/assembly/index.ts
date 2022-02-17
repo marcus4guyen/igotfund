@@ -10,6 +10,7 @@ import {
 } from 'near-sdk-as'
 import {
   AccountId,
+  COMPLEX_ACTIONS_GAS,
   FUND_KEY,
   MIN_ATTACHED_DEPOSIT,
   PAGE_SIZE,
@@ -148,7 +149,7 @@ export function release_donations(identifier: string): void {
     full_account_for(identifier),
     'release_donations',
     '',
-    XCC_GAS,
+    COMPLEX_ACTIONS_GAS,
     u128.Zero
   )
 
@@ -159,6 +160,8 @@ export function release_donations(identifier: string): void {
     XCC_GAS,
     u128.Zero
   )
+
+  promise.returnAsResult()
 }
 
 // A callback function for the cross contract call.

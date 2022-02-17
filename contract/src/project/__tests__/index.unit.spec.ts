@@ -215,7 +215,7 @@ describe('Project donations', (): void => {
     beforeEach((): void => {
       VMContext.setAccount_balance(u128.mul(util.ONE_NEAR, u128.from(10)))
 
-      VMContext.setAttached_deposit(u128.mul(util.ONE_NEAR, u128.from(150)))
+      VMContext.setAttached_deposit(util.MIN_RELEASED_DONATION)
 
       VMContext.setSigner_account_id(DONOR1_ACCOUNT_ID)
 

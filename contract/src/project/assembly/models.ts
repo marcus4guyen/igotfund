@@ -5,7 +5,7 @@ import {
   PersistentUnorderedMap,
   PersistentSet,
 } from 'near-sdk-as'
-import { AccountId, PROJECT_KEY, asNEAR, random } from '../../utils'
+import { AccountId, PROJECT_KEY, random } from '../../utils'
 
 const donations = new PersistentUnorderedMap<u64, Donation>('d')
 const comments = new PersistentUnorderedMap<u64, Comment>('c')
@@ -116,7 +116,7 @@ export class Project {
 export class Donation {
   created_at: u64 = context.blockTimestamp
   donor: AccountId = context.sender
-  amount: string = asNEAR(context.attachedDeposit)
+  amount: u128 = context.attachedDeposit
 }
 
 @nearBindgen
