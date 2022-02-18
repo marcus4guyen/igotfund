@@ -9,16 +9,24 @@ import {
   MIN_LIKED_COUNT,
   XCC_GAS,
   FIVE_NEAR,
+  ONE_NEAR,
 } from '../../utils'
 import { Comment, Donation, Project } from './models'
 
-// In order to keep the contract working, at least 10 NEAR will be needed for deposit.
-
-// Conditions:
-//  - Contract is not initialized yet.
-//  - title must not be blank.
-//  - description must be less than 500 characters.
-//  - imageUrl must start with https://.
+/**
+ * @param identifier
+ * @param title
+ * @param description
+ * @param imageUrl
+ *
+ * In order to keep the contract working, at least 10 NEAR will be needed for deposit.
+ *
+ * Conditions:
+ *  - Contract is not initialized yet.
+ *  - @param title must not be blank.
+ *  - @param description must be less than 500 characters.
+ *  - @param imageUrl must start with https://.
+ */
 export function init(
   identifier: string,
   title: string,
@@ -51,29 +59,37 @@ export function init(
   Project.create(context.sender, identifier, title, description, imageUrl)
 }
 
+/**
+ * @returns
+ */
 export function get(): Project {
   assert_contract_is_initialized()
 
   return Project.get()
 }
 
-// =====================
-// ======DONATIONS======
-// =====================
+// ---------------------
+// ------DONATIONS------
+// ---------------------
 
-// One of the most interesting features about the donation system is the opportunity for users to donate directly to projects they find interesting.
-// When enough funds are collected from the community, project owners can release the donations fund.
-
-// Conditions:
-//  - User will have to donate directly.
-//  - They will have to attach some money.
-//  - The project is currently in the funding phase.
+/**
+ * One of the most interesting features about the donation system is the opportunity for users to donate directly to projects they find interesting.
+ * When enough funds are collected from the community, project owners can release the donations fund.
+ *
+ * Conditions:
+ *  - User will have to donate directly.
+ *  - User will have to attach at least 1 NEAR.
+ *  - The project is currently in the funding phase.
+ */
 export function donate(): void {
   assert_contract_is_initialized()
 
   assert(context.sender == context.predecessor, 'User must donate directly.')
 
-  assert(context.attachedDeposit > u128.Zero, 'User must attach some money.')
+  assert(
+    u128.ge(context.attachedDeposit, ONE_NEAR),
+    'User must attach at least 1 NEAR.'
+  )
 
   assert(
     Project.get().funding == true,
@@ -83,7 +99,13 @@ export function donate(): void {
   Project.add_donation()
 }
 
-// Get a list of donors who have generously donated to the project.
+/**
+ * @param offset
+ * @param limit
+ * @returns
+ *
+ * Get a list of donors who have generously donated to the project.
+ */
 export function get_donation_list(
   offset: u32,
   limit: u32 = PAGE_SIZE
@@ -93,27 +115,38 @@ export function get_donation_list(
   return Project.get_donation_list(offset, limit)
 }
 
-// Get the total number of donations in this project.
+/**
+ * @returns
+ *
+ * Get the total number of donations in this project.
+ */
 export function get_donation_count(): u32 {
   return Project.get_donation_count()
 }
 
-// Get the current donations fund of this project.
+/**
+ * @returns
+ *
+ * Get the current donations fund of this project.
+ */
 export function get_total_donations(): u128 {
   return Project.get().total_donations
 }
 
-// In order to release the donations fund, the project must receive at least 100 NEAR tokens or 10 likes from the community.
-// All donations will be transferred directly to the project owner's wallet immediately,
-// but the initial deposit for launching the project (10 NEAR) will be kept to pay for the contract owner (5 NEAR) and for the storage staking (5 NEAR).
-// IMPORTANT:
-// Releasing the funds will mark the project as complete, meaning you won't be able to receive further donations from the community.
-// If you want to continue raising money, you'll need to create a new one.
-
-// Conditions:
-//  - This method can be invoked by the contract owner (i.e., the person who created the contract)
-//    only with the signature of the project owner (i.e., the person who owns the project).
-//  - The project must receive at least 100 NEAR tokens or 10 likes from the community.
+/**
+ * In order to release the donations fund, the project must receive at least 100 NEAR tokens or 10 likes from the community.
+ * All donations will be transferred directly to the project owner's wallet immediately,
+ * but the initial deposit for launching the project (10 NEAR) will be kept to pay for the contract owner (5 NEAR) and for the storage staking (5 NEAR).
+ *
+ * IMPORTANT:
+ * Releasing the funds will mark the project as complete, meaning you won't be able to receive further donations from the community.
+ * If you want to continue raising money, you'll need to create a new one.
+ *
+ * Conditions:
+ *  - This method can be invoked by the contract owner (i.e., the person who created the contract)
+ *    only with the signature of the project owner (i.e., the person who owns the project).
+ *  - The project must receive at least 100 NEAR tokens or 10 likes from the community.
+ */
 export function release_donations(): void {
   assert_contract_is_initialized()
 
@@ -142,21 +175,26 @@ export function release_donations(): void {
     .function_call('on_donations_released', '{}', u128.Zero, XCC_GAS)
 }
 
-// A callback function from the ContractPromiseBatch.
+/**
+ * A callback function from the ContractPromiseBatch.
+ */
 export function on_donations_released(): void {
   // Mark the project as complete, meaning you won't be able to receive further donations from the community.
   Project.release_donations()
 }
-// ====================
 
-// ====================
-// ======COMMENTS======
-// ====================
+// --------------------
+// ------COMMENTS------
+// --------------------
 
-// Conditions:
-//  - User will have to comment directly.
-//  - text is required.
-//  - text must be less than 500 characters.
+/**
+ * @param text
+ *
+ * Conditions:
+ *  - User will have to comment directly.
+ *  - @param text is required.
+ *  - @param text must be less than 500 characters.
+ */
 export function add_comment(text: string): void {
   assert_contract_is_initialized()
 
@@ -174,7 +212,13 @@ export function add_comment(text: string): void {
   Project.add_comment(text)
 }
 
-// Use the Offset-based Pagination to get the comments.
+/**
+ * @param offset
+ * @param limit
+ * @returns
+ *
+ * Use the Offset-based Pagination to get the comments.
+ */
 export function get_comment_list(
   offset: u32,
   limit: u32 = PAGE_SIZE
@@ -184,20 +228,25 @@ export function get_comment_list(
   return Project.get_comment_list(offset, limit)
 }
 
-// Get the total number of comments in this project.
+/**
+ * @returns
+ *
+ * Get the total number of comments in this project.
+ */
 export function get_comment_count(): u32 {
   assert_contract_is_initialized()
 
   return Project.get_comment_count()
 }
-// ====================
 
-// ====================
-// =======LIKES========
-// ====================
+// --------------------
+// -------LIKES--------
+// --------------------
 
-// Conditions:
-// - User will have to like directly.
+/**
+ * Conditions:
+ *  - User will have to like directly.
+ */
 export function like(): void {
   assert_contract_is_initialized()
 
@@ -206,21 +255,31 @@ export function like(): void {
   Project.like()
 }
 
-// Get the total number of likes in this project.
+/**
+ * @returns
+ *
+ * Get the total number of likes in this project.
+ */
 export function get_like_count(): u32 {
   assert_contract_is_initialized()
 
   return Project.get_like_count()
 }
-// ===========================
 
-// ===========================
-// =====PRIVATE FUNCTIONS=====
-// ===========================
+// ---------------------------
+// -----PRIVATE FUNCTIONS-----
+// ---------------------------
+
+/**
+ * @returns
+ */
 function is_initialized(): bool {
   return storage.hasKey(PROJECT_KEY)
 }
 
+/**
+ * @returns
+ */
 function can_release_donations_fund(): bool {
   return (
     u128.ge(Project.get().total_donations, MIN_RELEASED_DONATION) ||
@@ -232,10 +291,16 @@ function assert_contract_is_initialized(): void {
   assert(is_initialized(), 'Contract must be initialied first.')
 }
 
+/**
+ * @param message
+ */
 function assert_project_owner(message: string): void {
   assert(context.sender == Project.get().owner, message)
 }
 
+/**
+ * @param message
+ */
 function assert_contract_owner(message: string): void {
   assert(context.predecessor == Project.get().contract_owner, message)
 }

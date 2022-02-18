@@ -22,9 +22,9 @@ export class Fund {
     return storage.getSome<Fund>(FUND_KEY)
   }
 
-  // =================
-  // =====Project=====
-  // =================
+  // -----------------
+  // -----Project-----
+  // -----------------
   static create_project(owner: AccountId, identifier: string): void {
     projects.set(key_for(identifier), new Project(owner, identifier))
   }
@@ -48,7 +48,7 @@ export class Fund {
   static has_project(identifier: string): bool {
     return projects.get(key_for(identifier)) != null
   }
-  // =================
+  // -----------------
 }
 
 @nearBindgen

@@ -20,11 +20,14 @@ import { Fund, ProjectInitArgs, ProjectAsArgs, Project } from './model'
 
 const CODE = includeBytes('../../../build/release/project.wasm')
 
-// In order to keep the contract working, at least 10 NEAR will be needed for deposit.
-
-// Conditions:
-//  - Contract is not initialized yet.
-//  - Need at least 10 NEAR tokens in order to initialize this contract.
+/**
+ * In order to keep the contract working, at least 10 NEAR will be needed for deposit.
+ *
+ * Conditions:
+ *  - Contract is not initialized yet.
+ *  - Need at least 10 NEAR tokens in order to initialize this contract.
+ */
+//
 export function init(): void {
   assert(!is_contract_initialized(), 'Contract is already initialized.')
 
@@ -36,15 +39,22 @@ export function init(): void {
   Fund.create()
 }
 
-// To create a new project on our platform, you'll need at least 10 NEAR.
-// After you've received enough support from our community and raised 100 NEAR, you can release the funds for your project.
-// All donations will be transferred directly to your wallet immediately,
-// but the initial deposit (10 NEAR) for creating your project will be paid for the contract owner.
-
-// Conditions:
-//  - Need at least 10 NEAR tokens in order to create a new project.
-//  - Project identifier must be a valid NEAR account name.
-//  - Project identifier must be unique.
+/**
+ * @param identifier
+ * @param title
+ * @param description
+ * @param imageUrl
+ *
+ * To create a new project on our platform, you'll need at least 10 NEAR.
+ * After you've received enough support from our community and raised 100 NEAR, you can release the funds for your project.
+ * All donations will be transferred directly to your wallet immediately,
+ * but the initial deposit (10 NEAR) for creating your project will be paid for the contract owner.
+ *
+ * Conditions:
+ *  - Need at least 10 NEAR tokens in order to create a new project.
+ *  - @param identifier must be a valid NEAR account name.
+ *  - @param identifier must be unique.
+ */
 export function add_project(
   identifier: string,
   title: string,
@@ -95,7 +105,13 @@ export function add_project(
     )
 }
 
-// A callback function for the cross contract call.
+/**
+ *
+ * @param owner
+ * @param identifier
+ *
+ * A callback function for the cross contract call (XCC).
+ */
 export function on_project_created(owner: AccountId, identifier: string): void {
   const results = ContractPromise.getResults()
   const projectCreated = results[0]
@@ -132,11 +148,15 @@ export function on_project_created(owner: AccountId, identifier: string): void {
   }
 }
 
-// Once the project has reached 100 NEAR in funding or 10 Likes, the project owner can release the donation funds.
-
-// Conditions:
-//  - Only the project owner can release the donation funds.
-//  - Releasing the funds will mark the project as complete, meaning you won't be able to receive further donations from the community.
+/**
+ * @param identifier
+ *
+ * Once the project has reached 100 NEAR in funding or 10 Likes, the project owner can release the donation funds.
+ *
+ * Conditions:
+ *  - Only the project owner can release the donation funds.
+ *  - Releasing the funds will mark the project as complete, meaning you won't be able to receive further donations from the community.
+ */
 export function release_donations(identifier: string): void {
   assert_contract_is_initialized()
 
@@ -164,7 +184,12 @@ export function release_donations(identifier: string): void {
   promise.returnAsResult()
 }
 
-// A callback function for the cross contract call.
+/**
+ * @param owner
+ * @param identifier
+ *
+ * A callback function for the cross contract call.
+ */
 export function on_donations_released(
   owner: AccountId,
   identifier: string
@@ -206,7 +231,13 @@ export function on_donations_released(
   }
 }
 
-// Use the Offset-based Pagination to get the projects.
+/**
+ * @param offset
+ * @param limit
+ * @returns
+ *
+ * Use the Offset-based Pagination to get the projects.
+ */
 export function get_project_list(
   offset: u32,
   limit: u32 = PAGE_SIZE
@@ -216,7 +247,11 @@ export function get_project_list(
   return Fund.get_project_list(offset, limit)
 }
 
-// Get the total number of projects in this contract.
+/**
+ * @returns
+ *
+ * Get the total number of projects in this contract.
+ */
 export function get_project_count(): u32 {
   assert_contract_is_initialized()
 
@@ -226,14 +261,25 @@ export function get_project_count(): u32 {
 // ===========================
 // =====PRIVATE FUNCTIONS=====
 // ===========================
+/**
+ * @returns
+ */
 function is_contract_initialized(): bool {
   return storage.hasKey(FUND_KEY)
 }
 
+/**
+ * @param identifier
+ * @returns
+ */
 function is_project_owner(identifier: string): bool {
   return Fund.get_project(identifier).owner == context.sender
 }
 
+/**
+ * @param identifier
+ * @returns
+ */
 function full_account_for(identifier: string): string {
   return identifier + '.' + context.contractName
 }

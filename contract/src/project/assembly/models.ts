@@ -47,9 +47,9 @@ export class Project {
     return storage.getSome<Project>(PROJECT_KEY)
   }
 
-  // =====================
-  // ======DONATIONS======
-  // =====================
+  // ---------------------
+  // ------DONATIONS------
+  // ---------------------
   static add_donation(): void {
     const project = this.get()
 
@@ -80,11 +80,10 @@ export class Project {
 
     this.set(project)
   }
-  // ====================
 
-  // ====================
-  // ======COMMENTS======
-  // ====================
+  // --------------------
+  // ------COMMENTS------
+  // --------------------
   static add_comment(text: string): void {
     const comment = new Comment(text)
     comments.set(comment.created_at * random(), comment)
@@ -97,11 +96,10 @@ export class Project {
   static get_comment_count(): u32 {
     return comments.length
   }
-  // ====================
 
-  // ====================
-  // =======LIKES========
-  // ====================
+  // --------------------
+  // -------LIKES--------
+  // --------------------
   static like(): void {
     likes.add(context.sender)
   }
@@ -109,7 +107,6 @@ export class Project {
   static get_like_count(): u32 {
     return likes.size
   }
-  // ====================
 }
 
 @nearBindgen

@@ -19,6 +19,7 @@
     "build:release": "asb",
     "test": "yarn build:release && yarn:test:unit",
     "test:unit": "yarn asp -f unit.spec",
-    "clean": "rm -rf ./build"
+    "clean": "rm -rf ./build",
+    "deploy": "./script/dev-deploy.sh"
   }
 }
