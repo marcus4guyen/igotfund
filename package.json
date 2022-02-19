@@ -8,7 +8,7 @@
   },
   "scripts": {
     "copy": "copyfiles -u 2 \"contract/neardev/dev-account.env\" \"web/\"",
-    "rename": "node -e \"require('fs').rename('web/dev-account.env', 'web/.env.local', function(err) { if (err) console.log(err); console.log('File successfully renamed!') })\"",
+    "rename": "node -e \"require('fs').rename('web/dev-account.env', 'web/.env', function(err) { if (err) console.log(err); console.log('File successfully renamed!') })\"",
     "prepare": "npm run copy && npm run rename"
   }
 }

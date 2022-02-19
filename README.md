@@ -1,6 +1,6 @@
 ![Near, Inc. logo](https://near.org/wp-content/themes/near-19/assets/img/logo.svg?t=1553011311)
 
-# Certified Programs: igodfund
+# Certified Programs: igotfund
 
 igotfund is an easy way to raise money for your project, idea, or invention. Using this platform, you can tap into the community and reach people who are interested in funding your creative ideas. You can create as many projects as you want so that you can reach out to the widest possible audience. It's only 10 NEAR for each project, and when it reaches a goal of 100 NEAR or 10 likes from the community, then you can release the donations fund to your NEAR wallet.
 
