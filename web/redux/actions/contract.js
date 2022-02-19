@@ -224,4 +224,8 @@ export const _like = ({ contract }) => contract.like({}, BASIC_GAS)
  * @returns
  */
 export const _releaseDonations = ({ contract, identifier }) =>
-  contract.release_donations({ identifier }, BASIC_GAS)
+  contract.release_donations(
+    { identifier },
+    BASIC_GAS,
+    ONE_NEAR.div(10).toFixed()
+  )

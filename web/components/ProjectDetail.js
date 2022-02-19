@@ -47,6 +47,8 @@ const ProjectDetail = ({ identifier }) => {
   const [donations, setDonations] = useState([])
   const [likes, setLikes] = useState(0)
 
+  const canReleaseDonation = () => asNear(project.total_donations) >= 100
+
   useEffect(async () => {
     if (identifier) {
       const projectContract = await _initProjectContract({
@@ -117,7 +119,9 @@ const ProjectDetail = ({ identifier }) => {
                 <Text>
                   {likes} like{likes > 1 ? 's' : ''}
                 </Text>
-                <Text>{asNear(project.total_donations)}</Text>
+                <Text>
+                  {asNear(project.total_donations).toString().concat(' NEAR')}
+                </Text>
               </Flex>
               <Divider />
               <Flex
@@ -171,7 +175,7 @@ const ProjectDetail = ({ identifier }) => {
                   border='none'
                   leftIcon={<FaDonate />}
                   onClick={releaseDonationsHandler}
-                  disabled={!project.funding}
+                  disabled={!project.funding || !canReleaseDonation()}
                 >
                   Release Donations
                 </Button>

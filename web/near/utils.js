@@ -7,9 +7,8 @@ export const formatDate = (blockTimestamp) =>
   new Date(blockTimestamp / 1000000).toLocaleString()
 
 export const asNear = (amount) => {
-  console.log(amount)
   if (amount) {
-    return Big(amount).div(ONE_NEAR).toFixed() + ' NEAR'
+    return Big(amount).div(ONE_NEAR).toFixed()
   }
 
   return ''

@@ -27,7 +27,7 @@ const Donation = ({ created_at, donor, amount }) => {
         >
           {donor} donated&nbsp;
           <chakra.span fontFamily={'Work Sans'} fontWeight='bold' fontSize={14}>
-            {asNear(amount)}
+            {asNear(amount).toString().concat(' NEAR')}
           </chakra.span>
         </chakra.p>
 
