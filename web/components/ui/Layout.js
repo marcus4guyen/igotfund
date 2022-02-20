@@ -9,6 +9,7 @@ import {
   DrawerContent,
   Flex,
   HStack,
+  VStack,
   Icon,
   IconButton,
   Link,
@@ -20,7 +21,6 @@ import {
   Text,
   useColorModeValue,
   useDisclosure,
-  VStack,
 } from '@chakra-ui/react'
 import {
   FiBell,

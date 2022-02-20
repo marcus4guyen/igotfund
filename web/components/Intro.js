@@ -11,9 +11,14 @@ import {
   Heading,
   Icon,
   Stack,
+  VStack,
+  List,
+  ListItem,
+  ListIcon,
   Text,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { FaCheckCircle } from 'react-icons/fa'
 import { signIn } from '../redux/actions/authentication'
 
 const Intro = () => {
@@ -24,8 +29,6 @@ const Intro = () => {
   const signInHandler = useCallback(() =>
     dispatch(signIn({ wallet: walletConnection, nearConfig }))
   )
-
-  console.log()
 
   return router.route === '/rules' ? (
     <Rules />
@@ -116,7 +119,140 @@ const GetStarted = ({ signInHandler }) => {
 }
 
 const Rules = () => {
-  return <>Rules</>
+  const BoxWrapper = ({ children }) => {
+    return (
+      <Box
+        mb={4}
+        shadow='base'
+        borderWidth='1px'
+        alignSelf={{ base: 'center', lg: 'flex-start' }}
+        borderColor={useColorModeValue('gray.200', 'gray.500')}
+        borderRadius={'xl'}
+      >
+        {children}
+      </Box>
+    )
+  }
+
+  return (
+    <Box py={12}>
+      <VStack spacing={2} textAlign='center'>
+        <Heading as='h1' fontSize='4xl'>
+          igotfund
+        </Heading>
+        <Text fontSize='lg' color={'gray.500'}>
+          There are three roles in the platform: project owners, contract
+          owners, and donors.
+        </Text>
+      </VStack>
+      <Stack
+        direction={{ base: 'column', md: 'row' }}
+        textAlign='center'
+        justify='center'
+        spacing={{ base: 4, lg: 10 }}
+        py={10}
+      >
+        <BoxWrapper>
+          <Box position='relative'>
+            <Box
+              position='absolute'
+              top='-16px'
+              left='50%'
+              style={{ transform: 'translate(-50%)' }}
+            ></Box>
+            <Box py={4} px={12}>
+              <Text fontWeight='500' fontSize='2xl'>
+                Contract Owner
+              </Text>
+            </Box>
+            <VStack
+              bg={useColorModeValue('gray.50', 'gray.700')}
+              py={4}
+              borderBottomRadius={'xl'}
+            >
+              <List spacing={3} textAlign='start' px={12}>
+                <ListItem>
+                  <ListIcon as={FaCheckCircle} color='green.500' />
+                  can deploy and initialize contracts, which require a minimum
+                  of 10 NEAR deposits to be staked
+                </ListItem>
+                <ListItem>
+                  <ListIcon as={FaCheckCircle} color='green.500' />
+                  will be rewarded with 5 NEAR tokens when the Project owner
+                  decides to release the donations fund
+                </ListItem>
+              </List>
+            </VStack>
+          </Box>
+        </BoxWrapper>
+
+        <BoxWrapper>
+          <Box py={4} px={12}>
+            <Text fontWeight='500' fontSize='2xl'>
+              Project Owner
+            </Text>
+          </Box>
+          <VStack
+            bg={useColorModeValue('gray.50', 'gray.700')}
+            py={4}
+            borderBottomRadius={'xl'}
+          >
+            <List spacing={3} textAlign='start' px={12}>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                can set up as many projects as they like, with each project
+                costing 10 NEAR
+              </ListItem>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                the donations will be released once the project has raised at
+                least 100 NEAR or has reached 10 likes on the community board
+              </ListItem>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                once the project is marked complete, it's no longer eligible for
+                donation
+              </ListItem>
+            </List>
+          </VStack>
+        </BoxWrapper>
+
+        <BoxWrapper>
+          <Box py={4} px={12}>
+            <Text fontWeight='500' fontSize='2xl'>
+              Donor
+            </Text>
+          </Box>
+          <VStack
+            bg={useColorModeValue('gray.50', 'gray.700')}
+            py={4}
+            borderBottomRadius={'xl'}
+          >
+            <List spacing={3} textAlign='start' px={12}>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                can donate, like, and comment on any project that they find
+                appealing
+              </ListItem>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                the minimum donation amount is 1 NEAR
+              </ListItem>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                must donate, like, and comment directly (not through a
+                cross-contract call)
+              </ListItem>
+              <ListItem>
+                <ListIcon as={FaCheckCircle} color='green.500' />
+                can't like the same project multiple times
+              </ListItem>
+            </List>
+          </VStack>
+        </BoxWrapper>
+      </Stack>
+    </Box>
+  )
 }
 
 const Arrow = createIcon({
