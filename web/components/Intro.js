@@ -210,8 +210,8 @@ const Rules = () => {
               </ListItem>
               <ListItem>
                 <ListIcon as={FaCheckCircle} color='green.500' />
-                once the project is marked complete, it's no longer eligible for
-                donation
+                once the project is marked complete, it&apos;s no longer
+                eligible for donation
               </ListItem>
             </List>
           </VStack>
@@ -245,7 +245,7 @@ const Rules = () => {
               </ListItem>
               <ListItem>
                 <ListIcon as={FaCheckCircle} color='green.500' />
-                can't like the same project multiple times
+                can&apos;t like the same project multiple times
               </ListItem>
             </List>
           </VStack>
